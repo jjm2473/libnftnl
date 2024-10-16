@@ -1,8 +1,7 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * (C) 2024 Red Hat GmbH
  * Author: Phil Sutter <phil@nwl.cc>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  */
 #include <libmnl/libmnl.h>
 #include <linux/netfilter/nf_tables.h>
