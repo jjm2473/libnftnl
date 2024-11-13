@@ -198,8 +198,8 @@ nftnl_expr_bitwise_parse(struct nftnl_expr *e, struct nlattr *attr)
 }
 
 static int
-nftnl_expr_bitwise_snprintf_bool(char *buf, size_t remain,
-				 const struct nftnl_expr_bitwise *bitwise)
+nftnl_expr_bitwise_snprintf_mask_xor(char *buf, size_t remain,
+				     const struct nftnl_expr_bitwise *bitwise)
 {
 	int offset = 0, ret;
 
@@ -248,8 +248,8 @@ nftnl_expr_bitwise_snprintf(char *buf, size_t size,
 	int err = -1;
 
 	switch (bitwise->op) {
-	case NFT_BITWISE_BOOL:
-		err = nftnl_expr_bitwise_snprintf_bool(buf, size, bitwise);
+	case NFT_BITWISE_MASK_XOR:
+		err = nftnl_expr_bitwise_snprintf_mask_xor(buf, size, bitwise);
 		break;
 	case NFT_BITWISE_LSHIFT:
 		err = nftnl_expr_bitwise_snprintf_shift(buf, size, "<<", bitwise);
