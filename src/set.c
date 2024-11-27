@@ -185,8 +185,10 @@ int nftnl_set_set_data(struct nftnl_set *s, uint16_t attr, const void *data,
 			return -1;
 
 		memcpy(&s->desc.field_len, data, data_len);
-		while (s->desc.field_len[++s->desc.field_count]) {
-			if (s->desc.field_count >= NFT_REG32_COUNT)
+		for (s->desc.field_count = 0;
+		     s->desc.field_count < NFT_REG32_COUNT;
+		     s->desc.field_count++) {
+			if (!s->desc.field_len[s->desc.field_count])
 				break;
 		}
 		break;
