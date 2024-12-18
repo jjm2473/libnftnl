@@ -24,6 +24,7 @@ struct nftnl_expr_masq {
 	uint32_t		flags;
 	enum nft_registers	sreg_proto_min;
 	enum nft_registers	sreg_proto_max;
+	uint8_t			fullcone;
 };
 
 static int
@@ -41,6 +42,9 @@ nftnl_expr_masq_set(struct nftnl_expr *e, uint16_t type,
 		break;
 	case NFTNL_EXPR_MASQ_REG_PROTO_MAX:
 		memcpy(&masq->sreg_proto_max, data, sizeof(masq->sreg_proto_max));
+		break;
+	case NFTNL_EXPR_MASQ_REG_FULLCONE:
+		memcpy(&masq->fullcone, data, sizeof(masq->fullcone));
 		break;
 	default:
 		return -1;
@@ -64,6 +68,9 @@ nftnl_expr_masq_get(const struct nftnl_expr *e, uint16_t type,
 	case NFTNL_EXPR_MASQ_REG_PROTO_MAX:
 		*data_len = sizeof(masq->sreg_proto_max);
 		return &masq->sreg_proto_max;
+	case NFTNL_EXPR_MASQ_REG_FULLCONE:
+		*data_len = sizeof(masq->fullcone);
+		return &masq->fullcone;
 	}
 	return NULL;
 }
@@ -81,6 +88,10 @@ static int nftnl_expr_masq_cb(const struct nlattr *attr, void *data)
 	case NFTA_MASQ_REG_PROTO_MAX:
 	case NFTA_MASQ_FLAGS:
 		if (mnl_attr_validate(attr, MNL_TYPE_U32) < 0)
+			abi_breakage();
+		break;
+	case NFTA_MASQ_REG_FULLCONE:
+		if (mnl_attr_validate(attr, MNL_TYPE_U8) < 0)
 			abi_breakage();
 		break;
 	}
@@ -102,6 +113,8 @@ nftnl_expr_masq_build(struct nlmsghdr *nlh, const struct nftnl_expr *e)
 	if (e->flags & (1 << NFTNL_EXPR_MASQ_REG_PROTO_MAX))
 		mnl_attr_put_u32(nlh, NFTA_MASQ_REG_PROTO_MAX,
 				 htobe32(masq->sreg_proto_max));
+	if (e->flags & (1 << NFTNL_EXPR_MASQ_REG_FULLCONE))
+		mnl_attr_put_u8(nlh, NFTA_MASQ_REG_FULLCONE, masq->fullcone);
 }
 
 static int
@@ -127,6 +140,10 @@ nftnl_expr_masq_parse(struct nftnl_expr *e, struct nlattr *attr)
 			be32toh(mnl_attr_get_u32(tb[NFTA_MASQ_REG_PROTO_MAX]));
 		e->flags |= (1 << NFTNL_EXPR_MASQ_REG_PROTO_MAX);
 	}
+	if (tb[NFTA_MASQ_REG_FULLCONE]) {
+		masq->fullcone = mnl_attr_get_u8(tb[NFTA_MASQ_REG_FULLCONE]);
+		e->flags |= (1 << NFTNL_EXPR_MASQ_REG_FULLCONE);
+	}
 
 	return 0;
 }
@@ -145,6 +162,11 @@ static int nftnl_expr_masq_snprintf(char *buf, size_t remain,
 	if (e->flags & (1 << NFTNL_EXPR_MASQ_REG_PROTO_MAX)) {
 		ret = snprintf(buf + offset, remain, "proto_max reg %u ",
 			       masq->sreg_proto_max);
+		SNPRINTF_BUFFER_SIZE(ret, remain, offset);
+	}
+	if (e->flags & (1 << NFTNL_EXPR_MASQ_REG_FULLCONE)) {
+		ret = snprintf(buf + offset, remain, "fullcone reg %u ",
+			       masq->fullcone);
 		SNPRINTF_BUFFER_SIZE(ret, remain, offset);
 	}
 	if (e->flags & (1 << NFTNL_EXPR_MASQ_FLAGS)) {
